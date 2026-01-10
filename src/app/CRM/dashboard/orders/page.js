@@ -8,36 +8,36 @@ import Link from 'next/link';
 import RoleGuard from '@/auth/roleGuard';
 import { useAuth } from '@/context/authContext';
 import { Roles } from '@/config/roles';
-import useBrands from '@/lib/api/hooks/useBrands';
-import { getHeaderTableBrands } from '@/lib/api/utils/brands.config';
+import useCategories from '@/lib/api/hooks/useCategories';
+import { getHeaderTableCategories } from '@/lib/api/utils/categories.config';
 import ConfirmDeleteModal from '@/components/dashboard/tables/segments/confirmDeleteModal';
 import AlertModal from '@/components/dashboard/modals/alertModal';
 
-export default function Brands() {
-  const [brands, setBrands] = useState([]);
-  const [selectedBrands, setSelectedBrands] = useState(null);
+export default function Orders() {
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const { usuario } = useAuth();
   const [alert, setAlert] = useState({ type: '', message: '', url: '' });
 
-  const { getBrands, deleteBrand, loading, error } = useBrands();
+  const { getCategories, deleteCategory, loading, error } = useCategories();
 
-  const fetchBrands = useCallback(async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const { data } = await getBrands();
-      setBrands(data);
+      const { data } = await getCategories();
+      setCategories(data);
     } catch (err) {
       console.error(err);
     }
-  }, [getBrands]);
+  }, [getCategories]);
 
   useEffect(() => {
-    fetchBrands();
-  }, [fetchBrands]);
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleDeleteClick = (id, name) => {
-    setDeleteTarget({ id, name, type: 'marca' });
+    setDeleteTarget({ id, name, type: 'categoria' });
     setShowDeleteModal(true);
   };
 
@@ -45,18 +45,18 @@ export default function Brands() {
     if (!deleteTarget) return;
 
     try {
-      await deleteBrand(deleteTarget.id);
+      await deleteCategory(deleteTarget.id);
       setAlert({
         type: 'success',
-        message: 'Marca eliminada correctamente.',
+        message: 'Categoría eliminada correctamente.',
       });
       setShowDeleteModal(false);
       setDeleteTarget(null);
-      await fetchBrands();
+      await fetchCategories();
     } catch (err) {
       setAlert({
         type: 'error',
-        message: err?.message || 'Error al eliminar marca',
+        message: err?.message || 'Error al eliminar categoría',
       });
     }
   };
@@ -66,37 +66,37 @@ export default function Brands() {
       <div className="w-full p-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
-            Listado de Marcas
+            Listado de Categorías
           </h1>
 
           <div className="flex gap-2">
             <Link
-              href="/CRM/dashboard/brands/new"
+              href="/CRM/dashboard/categories/new"
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition"
             >
               <PlusIcon className="w-4 h-4" />
-              Agregar marca
+              Agregar categoría
             </Link>
           </div>
         </div>
 
         <div className="overflow-x-auto bg-white shadow-md rounded-lg">
           <Table
-            header={getHeaderTableBrands()}
-            info={brands}
-            view="brands"
-            setSelected={setSelectedBrands}
+            header={getHeaderTableCategories()}
+            info={categories}
+            view="categories"
+            setSelected={setSelectedCategories}
             rol={usuario?.role}
-            fetchData={fetchBrands}
+            fetchData={fetchCategories}
             loading={loading}
             error={error}
             handleDeleteClick={handleDeleteClick}
           />
-          {selectedBrands && (
+          {selectedCategories && (
             <ViewModal
-              data={selectedBrands}
-              type="brands"
-              onClose={() => setSelectedBrands(null)}
+              data={selectedCategories}
+              type="categories"
+              onClose={() => setSelectedCategories(null)}
             />
           )}
           {showDeleteModal && (

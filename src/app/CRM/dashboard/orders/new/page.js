@@ -4,40 +4,34 @@ import { useState } from 'react';
 import AlertModal from '@/components/dashboard/modals/alertModal';
 import { useAuth } from '@/context/authContext';
 import DinamicForm from '@/components/dashboard/form/DinamicForm';
+import useCategories from '@/lib/api/hooks/useCategories';
 import {
-  getEmptyInventory,
-  getFormFieldsInventory,
-} from '@/lib/api/utils/inventory.config';
-import useProducts from '@/lib/api/hooks/useProducts';
+  getEmptyCategory,
+  getFormFieldsCategories,
+} from '@/lib/api/utils/categories.config';
 
-export default function NewProduct() {
-  const [formData, setFormData] = useState(getEmptyInventory());
-  const [alert, setAlert] = useState({ type: '', message: '', url: '' });
-  const [images, setImages] = useState([]);
-  const [showImages, setShowImages] = useState(false);
+export default function NewCategory() {
   const { usuario } = useAuth();
+  const { createCategory, loading } = useCategories();
 
-  const { createProduct, loading } = useProducts();
+  const [formData, setFormData] = useState(getEmptyCategory());
+  const [alert, setAlert] = useState({ type: '', message: '', url: '' });
 
-  const handleReset = () => {
-    setFormData(getEmptyInventory());
-    setImages([]);
-    setShowImages(false);
-  };
+  const handleReset = () => setFormData(getEmptyCategory());
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createProduct(formData, images);
+      await createCategory(formData);
       setAlert({
         type: 'success',
-        message: 'Producto creado correctamente.',
-        url: '/CRM/dashboard/inventory',
+        message: 'Categoria creada correctamente.',
+        url: '/CRM/dashboard/categories',
       });
     } catch (err) {
       setAlert({
         type: 'error',
-        message: err.message || 'Error al crear producto',
+        message: err.message || 'Error al crear categoria',
       });
     }
   };
@@ -45,26 +39,23 @@ export default function NewProduct() {
   return (
     <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 mt-6 border border-gray-100">
       <h2 className="text-3xl font-bold text-gray-800 mb-2">
-        Crear Producto Nuevo
+        Crear Categoria Nueva
       </h2>
       <p className="text-sm text-gray-500 mb-6">
-        Ingrese la información del producto para registrar un nuevo producto.
+        Ingrese la información de la categoria para registrar una nueva
+        categoria.
       </p>
 
       <DinamicForm
         formData={formData}
-        formFields={getFormFieldsInventory()}
+        formFields={getFormFieldsCategories()}
         setFormData={setFormData}
         handleSubmit={handleSubmit}
         handleReset={handleReset}
         loading={loading}
         mode="new"
         usuario={usuario}
-        module="inventory"
-        images={images}
-        setImages={setImages}
-        showImages={showImages}
-        setShowImages={setShowImages}
+        module="categories"
       />
 
       <AlertModal

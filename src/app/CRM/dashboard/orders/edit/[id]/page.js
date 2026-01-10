@@ -5,75 +5,69 @@ import { useParams } from 'next/navigation';
 import AlertModal from '@/components/dashboard/modals/alertModal';
 import DinamicForm from '@/components/dashboard/form/DinamicForm';
 import { useAuth } from '@/context/authContext';
-import useProducts from '@/lib/api/hooks/useProducts';
-import { getFormFieldsInventory } from '@/lib/api/utils/inventory.config';
+import useCategories from '@/lib/api/hooks/useCategories';
+import { getFormFieldsCategories } from '@/lib/api/utils/categories.config';
 
-export default function EditProduct() {
+export default function EditCategory() {
   const [formData, setFormData] = useState({});
   const [alert, setAlert] = useState({ type: '', message: '', url: '' });
-  const [images, setImages] = useState([]);
-  const [showImages, setShowImages] = useState(false);
   const { id } = useParams();
   const { usuario } = useAuth();
+  const { getCategoryById, updateCategory, loading } = useCategories();
 
-  const { getProductById, updateProduct, loading } = useProducts();
-
-  const fetchProduct = useCallback(async () => {
+  const fetchCategory = useCallback(async () => {
     if (!id) return;
     try {
-      const { data } = await getProductById(Number(id));
+      const { data } = await getCategoryById(Number(id));
       setFormData(data);
-      setImages(data.images || []);
     } catch (err) {
       setAlert({
         type: 'warning',
         message: err.message || 'No tienes permisos',
-        url: '/CRM/dashboard/inventory',
+        url: '/CRM/dashboard/categories',
       });
     }
-  }, [getProductById, id]);
+  }, [getCategoryById, id]);
 
   useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+    fetchCategory();
+  }, [fetchCategory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateProduct(id, formData);
+      await updateCategory(id, formData);
       setAlert({
         type: 'success',
-        message: 'Producto actualizado correctamente.',
-        url: '/CRM/dashboard/inventory',
+        message: 'Categoria actualizada correctamente.',
+        url: '/CRM/dashboard/categories',
       });
     } catch (err) {
       setAlert({
         type: 'error',
-        message: err.message || 'Error al crear producto',
+        message: err.message || 'Error al crear categoria',
       });
     }
   };
 
   return (
     <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 mt-6 border border-gray-100">
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Editar Producto</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-2">
+        Editar Categoria
+      </h2>
       <p className="text-sm text-gray-500 mb-6">
-        Modifica la información del producto según sea necesario.
+        Modifica la información de la categoria según sea necesario.
       </p>
 
       <DinamicForm
         formData={formData}
-        formFields={getFormFieldsInventory()}
+        formFields={getFormFieldsCategories()}
         setFormData={setFormData}
         handleSubmit={handleSubmit}
         loading={loading}
         mode="edit"
         usuario={usuario}
-        module="inventory"
-        images={images}
-        setImages={setImages}
-        showImages={showImages}
-        setShowImages={setShowImages}
+        module="categories"
       />
 
       <AlertModal
