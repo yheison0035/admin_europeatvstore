@@ -5,10 +5,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 import RoleGuard from '@/auth/roleGuard';
-import { Roles } from '@/config/roles';
 import { useAuth } from '@/context/authContext';
-
-import useLocals from '@/lib/api/hooks/useLocals';
 
 import Table from '@/components/dashboard/tables/table';
 import Pagination from '@/components/dashboard/tables/segments/pagination';
@@ -17,89 +14,82 @@ import ConfirmDeleteModal from '@/components/dashboard/tables/segments/confirmDe
 import AlertModal from '@/components/dashboard/modals/alertModal';
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
 
-import {
-  getHeaderTableLocals,
-  viewModalConfig,
-} from '@/lib/api/utils/locals.config';
-
 import useColumnFilters from '@/components/dashboard/tables/hooks/useColumnFilters';
 import { useDebounce } from '@/components/dashboard/tables/hooks/useDebounce';
+import { getHeaderTableCompanies } from '@/lib/api/utils/companies.config';
+import useCompanies from '@/lib/api/hooks/useCompanies';
 
-export default function Locals() {
+export default function Companies() {
   const { usuario } = useAuth();
-  const { getLocals, deleteLocal, loading } = useLocals();
+  const { getCompanies, deleteCompany, loading } = useCompanies();
 
-  const [locals, setLocals] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [meta, setMeta] = useState(null);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  const [selectedLocals, setSelectedLocals] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [alert, setAlert] = useState({});
 
   const { filters, handleFilterChange } = useColumnFilters({
     name: '',
-    address: '',
-    city: '',
-    managerId: '',
-    phone: '',
     status: '',
   });
 
   const debouncedFilters = useDebounce(filters, 400);
 
-  const fetchLocals = useCallback(async () => {
-    const res = await getLocals({
+  const fetchCompanies = useCallback(async () => {
+    const res = await getCompanies({
       page,
       limit,
       ...debouncedFilters,
     });
 
-    setLocals(res.data);
+    setCompanies(res.data);
     setMeta(res.meta);
-  }, [getLocals, page, limit, debouncedFilters]);
+  }, [getCompanies, page, limit, debouncedFilters]);
 
   useEffect(() => {
-    fetchLocals();
-  }, [fetchLocals]);
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const handleDeleteClick = (id, name) => {
-    setDeleteTarget({ id, name, type: 'este local' });
+    setDeleteTarget({ id, name, type: 'esta empresa' });
     setShowDeleteModal(true);
   };
 
   const confirmDelete = async () => {
-    await deleteLocal(deleteTarget.id);
+    await deleteCompany(deleteTarget.id);
     setShowDeleteModal(false);
     setDeleteTarget(null);
-    fetchLocals();
+    fetchCompanies();
   };
 
   return (
-    <RoleGuard allowedRoles={Object.values(Roles)}>
+    <RoleGuard allowedRoles={['SUPER_PLATFORM_ADMIN']}>
       <div className="w-full p-4">
         <div className="flex flex-col md:flex-row justify-between mb-4 gap-4">
-          <h1 className="text-2xl font-semibold">Listado de Locales</h1>
+          <h1 className="text-2xl font-semibold">Empresas</h1>
 
           <Link
-            href="/CRM/dashboard/locals/new"
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+            href="/CRM/platform/companies/new"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
           >
             <PlusIcon className="w-4 h-4" />
-            Agregar local
+            Crear empresa
           </Link>
         </div>
 
         <div className="bg-white rounded-lg shadow relative">
-          <LoadingOverlay show={loading} text="Cargando locales..." />
+          <LoadingOverlay show={loading} text="Cargando empresas..." />
 
           <Table
-            header={getHeaderTableLocals()}
-            info={locals}
-            view="locals"
+            header={getHeaderTableCompanies()}
+            info={companies}
+            view="companies"
             rol={usuario?.role}
             loading={loading}
             filters={filters}
@@ -107,7 +97,7 @@ export default function Locals() {
               setPage(1);
               handleFilterChange(name, value);
             }}
-            setSelected={setSelectedLocals}
+            setSelected={setSelectedCompany}
             handleDeleteClick={handleDeleteClick}
           />
 
@@ -125,12 +115,12 @@ export default function Locals() {
           )}
         </div>
 
-        {selectedLocals && (
+        {selectedCompany && (
           <ViewModal
-            data={selectedLocals}
-            type="locals"
-            onClose={() => setSelectedLocals(null)}
-            viewModalConfig={viewModalConfig}
+            data={selectedCompany}
+            type="companies"
+            onClose={() => setSelectedCompany(null)}
+            viewModalConfig={viewModalConfigCompanies}
           />
         )}
 
